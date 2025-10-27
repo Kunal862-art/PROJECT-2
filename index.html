@@ -3,584 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/image.jpeg">
-    <title>NDMA - Capacity Building & Training Platform</title>
+    <title>SafeStep - Smart Platform for a Safer India</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <!-- Main Application - Now shows by default -->
-    <div id="mainApp" class="main-app">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <button id="sidebarToggle" class="sidebar-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="ndma-logo-small">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>NDMA CBT</span>
-                    </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="40" height="40" rx="8" fill="#00b4d8"/>
+                        <path d="M20 10L12 18L20 16L28 18L20 10Z" fill="#28a745"/>
+                        <circle cx="15" cy="22" r="2" fill="white"/>
+                        <circle cx="25" cy="22" r="2" fill="white"/>
+                        <circle cx="20" cy="28" r="2" fill="white"/>
+                        <path d="M15 22L20 28L25 22" stroke="white" stroke-width="1.5"/>
+                        <path d="M22 12L24 10M18 14L16 12M24 14L26 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <div class="header-right">
-                    <!-- Guest State - Authentication Buttons -->
-                    <div id="guestNavigation" class="guest-navigation">
-                        <button id="signInBtn" class="btn btn--outline btn--sm auth-btn">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Sign In</span>
-                        </button>
-                        <button id="logInBtn" class="btn btn--primary btn--sm auth-btn">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Log In</span>
-                        </button>
-                    </div>
-
-                    <!-- Logged In State - User Profile -->
-                    <div id="userNavigation" class="user-navigation hidden">
-                        <button class="notification-btn">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-count">3</span>
-                        </button>
-                        <div class="user-profile">
-                            <div id="userAvatar" class="user-avatar">G</div>
-                            <div class="user-info">
-                                <span id="userName">Guest User</span>
-                                <small id="userRole">Public Access</small>
-                            </div>
-                            <button id="logoutBtn" class="logout-btn">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>
-                        </div>
-                    </div>
+                <div class="logo-text">
+                    <h1>SafeStep</h1>
+                    <p class="tagline">SMART PLATFORM FOR A SAFER INDIA</p>
                 </div>
             </div>
-        </header>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#trainings" class="nav-link">Training Events</a>
+                <a href="#analytics" class="nav-link">Analytics</a>
+                <a href="#map" class="nav-link">GIS Map</a>
+            </nav>
+            <div class="auth-buttons">
+                <button class="btn btn-outline" id="signInBtn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 7c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3zm0-5c-1.103 0-2 .897-2 2s.897 2 2 2 2-.897 2-2-.897-2-2-2zm7 13v-1c0-2.206-1.794-4-4-4H5c-2.206 0-4 1.794-4 4v1h14zm-13-1v-1c0-1.654 1.346-3 3-3h6c1.654 0 3 1.346 3 3v1H2z"/>
+                        <path d="M12 8h2v2h-2v2h-2v-2H8V8h2V6h2z"/>
+                    </svg>
+                    Sign In
+                </button>
+                <button class="btn btn-primary" id="logInBtn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M11 7H3V5l-4 3.5L3 12v-2h8z"/>
+                        <path d="M10 2v4h1V2h4v12h-4v-4h-1v5h6V1h-6z"/>
+                    </svg>
+                    Log In
+                </button>
+            </div>
+        </div>
+    </header>
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar">
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <aside class="sidebar">
             <nav class="sidebar-nav">
-                <a href="#dashboard" class="nav-item active" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i>
+                <a href="#dashboard" class="sidebar-link active">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2L2 7v11h6v-6h4v6h6V7l-8-5z"/>
+                    </svg>
                     <span>Dashboard</span>
                 </a>
-                <a href="#trainings" class="nav-item" data-section="trainings">
-                    <i class="fas fa-calendar-alt"></i>
+                <a href="#trainings" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6 3h8v2H6zM4 7h12v10H4z"/>
+                        <circle cx="7" cy="10" r="1"/>
+                        <circle cx="10" cy="10" r="1"/>
+                        <circle cx="13" cy="10" r="1"/>
+                    </svg>
                     <span>Training Events</span>
                 </a>
-                <a href="#map" class="nav-item" data-section="map">
-                    <i class="fas fa-map"></i>
-                    <span>GIS Mapping</span>
+                <a href="#map" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2c-2.757 0-5 2.243-5 5 0 3.186 5 11 5 11s5-7.814 5-11c0-2.757-2.243-5-5-5zm0 7c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2z"/>
+                    </svg>
+                    <span>GIS Map</span>
                 </a>
-                <a href="#attendance" class="nav-item restricted-access" data-section="attendance">
-                    <i class="fas fa-qrcode"></i>
-                    <span>Attendance</span>
-                </a>
-                <a href="#analytics" class="nav-item" data-section="analytics">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Analytics</span>
-                </a>
-                <a href="#alerts" class="nav-item restricted-access" data-section="alerts">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Alerts</span>
-                </a>
-                <a href="#reports" class="nav-item" data-section="reports">
-                    <i class="fas fa-file-alt"></i>
+                <a href="#reports" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 2h12v16H4V2zm2 2v12h8V4H6zm2 2h4v2H8V6zm0 3h4v2H8V9zm0 3h4v2H8v-2z"/>
+                    </svg>
                     <span>Reports</span>
                 </a>
-                <a href="#users" class="nav-item admin-only" data-section="users">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
+                <a href="#attendance" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M16 18H4V6h12v12zm-2-10H6v8h8V8z"/>
+                        <path d="M8 10h4v1H8v-1zm0 2h4v1H8v-1z"/>
+                    </svg>
+                    <span>Attendance</span>
                 </a>
-                <a href="#settings" class="nav-item admin-only" data-section="settings">
-                    <i class="fas fa-cog"></i>
+                <a href="#analytics" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 16h16v2H2v-2zm2-2h2v2H4v-2zm4-4h2v6H8v-6zm4-3h2v9h-2V7zm4-5h2v14h-2V2z"/>
+                    </svg>
+                    <span>Analytics</span>
+                </a>
+                <a href="#alerts" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2c-1.1 0-2 .9-2 2v1C5.9 5.6 4 7.9 4 10.5V14l-2 2v1h16v-1l-2-2v-3.5c0-2.6-1.9-4.9-4-5.5V4c0-1.1-.9-2-2-2zm0 16c1.1 0 2-.9 2-2H8c0 1.1.9 2 2 2z"/>
+                    </svg>
+                    <span>Alerts</span>
+                </a>
+                <a href="#settings" class="sidebar-link">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M17.43 10.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C12.46 2.18 12.25 2 12 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM10 13c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/>
+                    </svg>
                     <span>Settings</span>
                 </a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
+        <div class="content">
             <!-- Dashboard Section -->
-            <section id="dashboard" class="content-section active">
-                <div class="section-header">
-                    <h1>Dashboard</h1>
-                    <!-- <p>Overview of training activities and platform metrics</p> -->
-                    <p>SafeStep - Your Path to Disaster Preparedness</p>
-                </div>
+            <section id="dashboard" class="section active">
+                <h2 class="section-title">Dashboard Overview</h2>
 
-                <div id="guestWelcome" class="guest-welcome">
-                    <div class="welcome-card">
-                        <div class="welcome-content">
-                            <h2>Welcome to NDMA Capacity Building & Training Platform</h2>
-                            <p>Access public training information, upcoming events, and general disaster management resources. Sign in to access personalized features and restricted content.</p>
-                            <div class="welcome-actions">
-                                <button class="btn btn--primary" onclick="document.getElementById('signInBtn').click()">
-                                    <i class="fas fa-user-plus"></i>
-                                    Create Account
-                                </button>
-                                <button class="btn btn--outline" onclick="document.getElementById('logInBtn').click()">
-                                    <i class="fas fa-sign-in-alt"></i>
-                                    Sign In to Account
-                                </button>
-                            </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e0f7ff;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#00b4d8">
+                                <path d="M6 3h8v2H6zM4 7h12v10H4z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Trainings</p>
+                            <h3 class="stat-value">156</h3>
+                            <span class="stat-change positive">+12% from last month</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-calendar-check"></i>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #d4edda;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#28a745">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
                         </div>
-                        <div class="metric-content">
-                            <h3>156</h3>
-                            <p>Total Trainings</p>
-                            <small class="metric-trend positive">+12% from last month</small>
-                        </div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="metric-content">
-                            <h3>4,200</h3>
-                            <p>Total Participants</p>
-                            <small class="metric-trend positive">+8% from last month</small>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Participants</p>
+                            <h3 class="stat-value">4,200</h3>
+                            <span class="stat-change positive">+8% from last month</span>
                         </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-map-marked-alt"></i>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fff3cd;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffc107">
+                                <path d="M12 2L2 7v11h6v-6h8v6h6V7l-10-5z"/>
+                            </svg>
                         </div>
-                        <div class="metric-content">
-                            <h3>28</h3>
-                            <p>States Covered</p>
-                            <small class="metric-trend neutral">No change</small>
+                        <div class="stat-content">
+                            <p class="stat-label">States Covered</p>
+                            <h3 class="stat-value">28</h3>
+                            <span class="stat-change">All regions active</span>
                         </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-star"></i>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f8d7da;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#dc3545">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
                         </div>
-                        <div class="metric-content">
-                            <h3>4.3</h3>
-                            <p>Avg. Rating</p>
-                            <small class="metric-trend positive">+0.2 from last month</small>
+                        <div class="stat-content">
+                            <p class="stat-label">Active Alerts</p>
+                            <h3 class="stat-value">3</h3>
+                            <span class="stat-change negative">2 require attention</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Training Locations</h3>
-                        <div id="dashboardMap" class="dashboard-map"></div>
+                <div class="chart-section">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Monthly Training Trends</h3>
+                        <canvas id="trendsChart"></canvas>
                     </div>
-                    
-                    <div class="dashboard-card">
-                        <h3>Recent Activities</h3>
-                        <div class="activity-list">
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-plus-circle"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p><strong>New training created:</strong> Disaster Response Training - Mumbai</p>
-                                    <small>2 hours ago</small>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-user-check"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p><strong>Attendance marked:</strong> 42 participants in Delhi workshop</p>
-                                    <small>4 hours ago</small>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-star"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p><strong>Feedback received:</strong> 4.5/5 rating for Chennai training</p>
-                                    <small>1 day ago</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                </div>
 
-                    <div class="dashboard-card">
-                        <h3>Quick Actions</h3>
-                        <div class="quick-actions">
-                            <button class="btn btn--primary" onclick="showSection('trainings')">
-                                <i class="fas fa-calendar"></i>
-                                View Trainings
-                            </button>
-                            <button class="btn btn--secondary" onclick="showSection('map')">
-                                <i class="fas fa-map"></i>
-                                Explore Map
-                            </button>
-                            <button class="btn btn--outline" onclick="showSection('reports')">
-                                <i class="fas fa-download"></i>
-                                Public Reports
-                            </button>
+                <div class="recent-trainings">
+                    <h3 class="section-subtitle">Recent Training Events</h3>
+                    <div class="training-list">
+                        <div class="training-item">
+                            <div class="training-icon" style="background: #d4edda;">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="#28a745">
+                                    <circle cx="10" cy="10" r="8"/>
+                                </svg>
+                            </div>
+                            <div class="training-details">
+                                <h4>Disaster Response Training - Mumbai</h4>
+                                <p>Oct 15-17, 2025 | Dr. Sunita Patel | 42/50 enrolled</p>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <div class="training-item">
+                            <div class="training-icon" style="background: #d4edda;">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="#28a745">
+                                    <circle cx="10" cy="10" r="8"/>
+                                </svg>
+                            </div>
+                            <div class="training-details">
+                                <h4>Risk Assessment Workshop - Delhi</h4>
+                                <p>Oct 20-22, 2025 | Dr. Rajesh Kumar | 28/30 enrolled</p>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <div class="training-item">
+                            <div class="training-icon" style="background: #fff3cd;">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="#ffc107">
+                                    <circle cx="10" cy="10" r="8"/>
+                                </svg>
+                            </div>
+                            <div class="training-details">
+                                <h4>Community Engagement Training - Kolkata</h4>
+                                <p>Oct 25-26, 2025 | Priya Sharma | 35/40 enrolled</p>
+                            </div>
+                            <span class="badge badge-warning">Scheduled</span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Training Events Section -->
-            <section id="trainings" class="content-section">
-                <div class="section-header">
-                    <h1>Training Events</h1>
-                    <button id="addTrainingBtn" class="btn btn--primary restricted-feature">
-                        <i class="fas fa-plus"></i>
-                        Add Training
-                    </button>
-                </div>
-
-                <div class="filters-bar">
-                    <div class="filters-group">
-                        <select class="form-control filter-select">
-                            <option value="">All States</option>
-                            <option value="Delhi">Delhi</option>
-                            <option value="Maharashtra">Maharashtra</option>
-                            <option value="Karnataka">Karnataka</option>
-                        </select>
-                        <select class="form-control filter-select">
-                            <option value="">All Themes</option>
-                            <option value="Disaster Response">Disaster Response</option>
-                            <option value="Risk Assessment">Risk Assessment</option>
-                            <option value="Community Engagement">Community Engagement</option>
-                        </select>
-                        <input type="date" class="form-control filter-input">
-                        <input type="search" class="form-control filter-input" placeholder="Search trainings...">
-                    </div>
-                </div>
-
-                <div class="trainings-grid" id="trainingsGrid">
-                    <!-- Training cards will be populated by JavaScript -->
+            <section id="trainings" class="section">
+                <h2 class="section-title">Training Events</h2>
+                <button class="btn btn-primary">Create New Training</button>
+                <div class="training-grid">
+                    <p>Training events management interface</p>
                 </div>
             </section>
 
-            <!-- GIS Mapping Section -->
-            <section id="map" class="content-section">
-                <div class="section-header">
-                    <h1>GIS Mapping</h1>
-                    <div class="map-controls">
-                        <button class="btn btn--secondary" id="exportMapBtn">
-                            <i class="fas fa-download"></i>
-                            Export Map
-                        </button>
-                    </div>
-                </div>
-
-                <div class="map-container">
-                    <div class="map-sidebar">
-                        <h3>Filters</h3>
-                        <div class="filter-group">
-                            <label>State</label>
-                            <select id="mapStateFilter" class="form-control">
-                                <option value="">All States</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Theme</label>
-                            <select id="mapThemeFilter" class="form-control">
-                                <option value="">All Themes</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Date Range</label>
-                            <input type="date" id="mapStartDate" class="form-control">
-                            <input type="date" id="mapEndDate" class="form-control">
-                        </div>
-                        <button class="btn btn--primary btn--full-width" id="applyMapFilters">Apply Filters</button>
-                    </div>
-                    <div id="mainMap" class="main-map"></div>
-                </div>
+            <!-- GIS Map Section -->
+            <section id="map" class="section">
+                <h2 class="section-title">GIS Map View</h2>
+                <div id="mapContainer" style="height: 600px; border-radius: 8px; overflow: hidden;"></div>
             </section>
 
-            <!-- Attendance Section - Restricted -->
-            <section id="attendance" class="content-section">
-                <div class="section-header">
-                    <h1>Attendance Management</h1>
-                </div>
-
-                <div id="attendanceContent" class="attendance-content">
-                    <!-- Content will be loaded based on authentication status -->
-                </div>
+            <!-- Other sections -->
+            <section id="analytics" class="section">
+                <h2 class="section-title">Analytics</h2>
+                <p>Analytics dashboard content</p>
             </section>
 
-            <!-- Analytics Section -->
-            <section id="analytics" class="content-section">
-                <div class="section-header">
-                    <h1>Analytics & Feedback</h1>
-                </div>
-
-                <div class="analytics-grid">
-                    <div class="card">
-                        <div class="card__body">
-                            <h3>Training Effectiveness</h3>
-                            <div class="chart-container" style="position: relative; height: 300px;">
-                                <canvas id="effectivenessChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card__body">
-                            <h3>Geographic Coverage</h3>
-                            <div class="chart-container" style="position: relative; height: 300px;">
-                                <canvas id="coverageChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card__body">
-                            <h3>Satisfaction Trends</h3>
-                            <div class="chart-container" style="position: relative; height: 300px;">
-                                <canvas id="satisfactionChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <section id="reports" class="section">
+                <h2 class="section-title">Reports</h2>
+                <p>Reports generation interface</p>
             </section>
 
-            <!-- Alerts Section - Restricted -->
-            <section id="alerts" class="content-section">
-                <div class="section-header">
-                    <h1>Alerts & Notifications</h1>
-                </div>
-
-                <div id="alertsContent" class="alerts-content">
-                    <!-- Content will be loaded based on authentication status -->
-                </div>
+            <section id="attendance" class="section">
+                <h2 class="section-title">Attendance Management</h2>
+                <p>Attendance tracking system</p>
             </section>
 
-            <!-- Reports Section -->
-            <section id="reports" class="content-section">
-                <div class="section-header">
-                    <h1>Reports</h1>
-                </div>
-
-                <div class="reports-grid">
-                    <div class="card">
-                        <div class="card__body">
-                            <h3>Public Reports</h3>
-                            <div class="public-reports">
-                                <div class="report-item">
-                                    <div class="report-info">
-                                        <h4>Monthly Training Summary</h4>
-                                        <p>Public overview of training activities</p>
-                                    </div>
-                                    <button class="btn btn--secondary btn--sm">Download</button>
-                                </div>
-                                <div class="report-item">
-                                    <div class="report-info">
-                                        <h4>Geographic Coverage Report</h4>
-                                        <p>Training distribution across states</p>
-                                    </div>
-                                    <button class="btn btn--secondary btn--sm">Download</button>
-                                </div>
-                                <div class="report-item">
-                                    <div class="report-info">
-                                        <h4>Public Statistics</h4>
-                                        <p>General platform metrics and trends</p>
-                                    </div>
-                                    <button class="btn btn--secondary btn--sm">Download</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <section id="alerts" class="section">
+                <h2 class="section-title">System Alerts</h2>
+                <p>Alert notifications and management</p>
             </section>
 
-            <!-- User Management Section - Admin Only -->
-            <section id="users" class="content-section">
-                <div class="access-restricted">
-                    <div class="restriction-message">
-                        <i class="fas fa-lock"></i>
-                        <h3>Admin Access Required</h3>
-                        <p>This section is only available to administrators.</p>
-                    </div>
-                </div>
+            <section id="settings" class="section">
+                <h2 class="section-title">Settings</h2>
+                <p>Application settings and configuration</p>
             </section>
+        </div>
+    </main>
 
-            <!-- Settings Section - Admin Only -->
-            <section id="settings" class="content-section">
-                <div class="access-restricted">
-                    <div class="restriction-message">
-                        <i class="fas fa-lock"></i>
-                        <h3>Admin Access Required</h3>
-                        <p>System settings are only available to administrators.</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Authentication Modals -->
-    <!-- Sign In Modal (Registration) -->
-    <div id="signInModal" class="modal hidden">
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Create Account</h3>
-                <button class="modal-close" id="closeSignInModal">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2>Sign In - Create Account</h2>
+                <button class="modal-close" id="closeSignIn">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="signInForm">
-                    <div class="form-group">
-                        <label class="form-label" for="signInName">Full Name</label>
-                        <input type="text" id="signInName" class="form-control" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="signInEmail">Email Address</label>
-                        <input type="email" id="signInEmail" class="form-control" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="signInPassword">Password</label>
-                        <input type="password" id="signInPassword" class="form-control" placeholder="Create a password" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="signInRole">Role</label>
-                        <select id="signInRole" class="form-control" required>
-                            <option value="">Select your role</option>
-                            <option value="NDMA Admin">NDMA Admin</option>
-                            <option value="State Admin">State Admin</option>
-                            <option value="District/SDMA">District/SDMA</option>
-                            <option value="Trainer">Trainer</option>
-                            <option value="Participant">Participant</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="signInState">State</label>
-                        <select id="signInState" class="form-control" required>
-                            <option value="">Select your state</option>
-                        </select>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn--secondary" id="cancelSignIn">Cancel</button>
-                        <button type="submit" class="btn btn--primary">Create Account</button>
-                    </div>
-                    <div class="modal-footer">
-                        <p>Already have an account? <a href="#" id="switchToLogIn">Log in here</a></p>
-                    </div>
-                </form>
-            </div>
+            <form id="signInForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signInName">Full Name</label>
+                    <input type="text" id="signInName" class="form-input" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="signInEmail">Email Address</label>
+                    <input type="email" id="signInEmail" class="form-input" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="signInRole">Role</label>
+                    <select id="signInRole" class="form-input" required>
+                        <option value="">Select your role</option>
+                        <option value="NDMA Admin">NDMA Admin</option>
+                        <option value="State Admin">State Admin</option>
+                        <option value="District/SDMA">District/SDMA</option>
+                        <option value="Trainer">Trainer</option>
+                        <option value="Participant">Participant</option>
+                        <option value="Viewer">Viewer (Public)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="signInState">State</label>
+                    <select id="signInState" class="form-input" required>
+                        <option value="">Select your state</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Puducherry">Puducherry</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="signInPassword">Password</label>
+                    <input type="password" id="signInPassword" class="form-input" required placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="signInConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signInConfirmPassword" class="form-input" required placeholder="Confirm your password">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" required>
+                        <span>I agree to the Terms and Conditions</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                <p class="form-footer">Already have an account? <a href="#" id="switchToLogIn">Log In</a></p>
+            </form>
         </div>
     </div>
 
     <!-- Log In Modal -->
-    <div id="logInModal" class="modal hidden">
+    <div id="logInModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Log In</h3>
-                <button class="modal-close" id="closeLogInModal">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2>Log In - Welcome Back</h2>
+                <button class="modal-close" id="closeLogIn">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="logInForm">
-                    <div class="form-group">
-                        <label class="form-label" for="logInEmail">Email Address</label>
-                        <input type="email" id="logInEmail" class="form-control" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="logInPassword">Password</label>
-                        <input type="password" id="logInPassword" class="form-control" placeholder="Enter your password" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="rememberMe"> Remember me
-                        </label>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn--secondary" id="cancelLogIn">Cancel</button>
-                        <button type="submit" class="btn btn--primary">Log In</button>
-                    </div>
-                    <div class="modal-footer">
-                        <p>Don't have an account? <a href="#" id="switchToSignIn">Sign up here</a></p>
-                        <p><a href="#" class="forgot-password">Forgot password?</a></p>
-                    </div>
-                </form>
-            </div>
+            <form id="logInForm" class="auth-form">
+                <div class="form-group">
+                    <label for="logInEmail">Email Address</label>
+                    <input type="email" id="logInEmail" class="form-input" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="logInPassword">Password</label>
+                    <input type="password" id="logInPassword" class="form-input" required placeholder="Enter your password">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span>Remember me</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Log In</button>
+                <p class="form-footer">
+                    <a href="#">Forgot password?</a> | 
+                    Don't have an account? <a href="#" id="switchToSignIn">Sign In</a>
+                </p>
+                <div class="demo-credentials">
+                    <p><strong>Demo Credentials:</strong></p>
+                    <p>Email: rajesh.kumar@ndma.gov.in</p>
+                    <p>Password: admin123</p>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Training Modal -->
-    <div id="trainingModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="trainingModalTitle">Add Training Event</h3>
-                <button class="modal-close" id="closeTrainingModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="trainingForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Event Title</label>
-                            <input type="text" id="eventTitle" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Description</label>
-                            <textarea id="eventDescription" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" id="startDate" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">End Date</label>
-                            <input type="date" id="endDate" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Start Time</label>
-                            <input type="time" id="startTime" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">End Time</label>
-                            <input type="time" id="endTime" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Trainer</label>
-                            <select id="trainer" class="form-control" required>
-                                <option value="">Select Trainer</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Capacity</label>
-                            <input type="number" id="capacity" class="form-control" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Location</label>
-                            <input type="text" id="location" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Themes</label>
-                            <select id="themes" class="form-control" multiple>
-                                <!-- Options will be populated by JavaScript -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn--secondary" id="cancelTraining">Cancel</button>
-                        <button type="submit" class="btn btn--primary">Save Training</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
