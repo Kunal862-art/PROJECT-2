@@ -4,7 +4,7 @@
 // API Base URL - Update this with your Render backend URL
 // Local: "http://localhost:5000/api"
 // Production: "https://your-app-name.onrender.com/api"
-const API_BASE_URL = "https://safestep-backend.onrender.com/api";
+const API_BASE_URL = "https://project-2-84qm.onrender.com/api";
 
 // Application Data
 const appData = {
