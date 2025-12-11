@@ -1,10 +1,11 @@
 // SafeStep Platform - Complete Fixed Frontend JavaScript
 // Version 3.0 - Production Ready with dynamic API base
 
-// API Base URL - Update this with your Render backend URL
-// Local: "http://localhost:5000/api"
+// API Base URL - when running locally point to your local backend
+// Local: "http://localhost:5000/api"  (use this when running backend.py locally)
 // Production: "https://your-app-name.onrender.com/api"
-const API_BASE_URL = "https://project-2-84qm.onrender.com/api";
+const API_BASE_URL = "http://localhost:5000/api";
+// const API_BASE_URL = "https://project-2-84qm.onrender.com/api";
 
 // Application Data
 const appData = {
