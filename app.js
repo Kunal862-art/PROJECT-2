@@ -479,10 +479,6 @@ function initializeNavigation() {
   navLinks.forEach((link) => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
-      if (!currentUser) {
-        alert("Please log in first");
-        return;
-      }
       const target = this.getAttribute("href").substring(1);
       showSection(target);
 
@@ -495,10 +491,6 @@ function initializeNavigation() {
   sidebarLinks.forEach((link) => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
-      if (!currentUser) {
-        alert("Please log in first");
-        return;
-      }
       const target = this.getAttribute("href").substring(1);
       showSection(target);
 
