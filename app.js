@@ -256,7 +256,7 @@ function updateUIForLoggedOutUser() {
     authButtons.innerHTML = `
             <button id="signInBtn" class="btn btn-primary">Sign In</button>
             <button id="logInBtn" class="btn btn-outline">Log In</button>
-            <button id="chatbotBtn" class="btn btn-outline" onclick="openModal('chatModal')">🤖 Chat</button>
+            <button id="chatbotBtn" class="btn btn-outline" onclick="openModal('chatModal')">🤖</button>
         `;
 
     document

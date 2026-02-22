@@ -129,7 +129,8 @@ body {
 .btn-outline {
   background: transparent;
   color: black;
-  border: 2px solid var(--teal);
+  
+  /* border: 2px solid var(--teal); */
 }
 
 .btn-outline:hover {
@@ -147,6 +148,8 @@ body {
 
 #chatbotBtn {
   color: white !important;
+  font-size: 1.5rem;
+  padding: 0.75rem 1.5rem;
 }
 
 #chatbotBtn:hover {
