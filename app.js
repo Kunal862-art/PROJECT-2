@@ -69,8 +69,10 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("SafeStep Platform Frontend Started");
   initializeEventListeners();
   initializeNavigation();
+  initializeSettingsTabs();
   setTimeout(() => {
     initializeChart();
+    initializeAnalyticsCharts();
     initializeMap();
     checkAuthStatus();
     loadTrainings();
@@ -500,6 +502,42 @@ function initializeNavigation() {
   });
 }
 
+function initializeSettingsTabs() {
+  console.log("Initializing settings tabs...");
+
+  const settingsTabs = document.querySelectorAll(".settings-tab");
+  const settingsPanels = document.querySelectorAll(".settings-panel");
+
+  settingsTabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      const targetTab = this.getAttribute("data-tab");
+
+      // Remove active class from all tabs
+      settingsTabs.forEach((t) => t.classList.remove("active"));
+      // Add active class to clicked tab
+      this.classList.add("active");
+
+      // Hide all panels
+      settingsPanels.forEach((panel) => panel.classList.remove("active"));
+      // Show target panel
+      const targetPanel = document.getElementById(targetTab + "-panel");
+      if (targetPanel) {
+        targetPanel.classList.add("active");
+      }
+    });
+  });
+
+  // Handle account deletion confirmation
+  const confirmDeleteCheckbox = document.getElementById("confirmDelete");
+  const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+
+  if (confirmDeleteCheckbox && deleteAccountBtn) {
+    confirmDeleteCheckbox.addEventListener("change", function () {
+      deleteAccountBtn.disabled = !this.checked;
+    });
+  }
+}
+
 function showSection(sectionId) {
   document.querySelectorAll(".section").forEach((section) => {
     section.classList.remove("active");
@@ -595,6 +633,158 @@ function initializeMap() {
       console.error("Map error:", e);
     }
   }
+}
+
+// ==================== ANALYTICS CHARTS ====================
+
+function initializeAnalyticsCharts() {
+  // Participation Trends Chart
+  const participationCtx = document.getElementById("participationChart");
+  if (participationCtx && typeof Chart !== "undefined") {
+    new Chart(participationCtx, {
+      type: "line",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [
+          {
+            label: "Training Sessions",
+            data: [45, 52, 48, 61, 55, 67, 71, 68, 74, 82, 79, 85],
+            borderColor: "rgba(40, 167, 69, 1)",
+            backgroundColor: "rgba(40, 167, 69, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+          {
+            label: "Participants",
+            data: [1250, 1420, 1380, 1650, 1520, 1780, 1890, 1820, 1950, 2100, 2050, 2200],
+            borderColor: "rgba(0, 180, 216, 1)",
+            backgroundColor: "rgba(0, 180, 216, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+
+  // Regional Distribution Chart
+  const regionalCtx = document.getElementById("regionalChart");
+  if (regionalCtx && typeof Chart !== "undefined") {
+    new Chart(regionalCtx, {
+      type: "doughnut",
+      data: {
+        labels: ["Maharashtra", "Uttar Pradesh", "West Bengal", "Bihar", "Tamil Nadu", "Others"],
+        datasets: [
+          {
+            data: [28, 22, 18, 15, 12, 5],
+            backgroundColor: [
+              "rgba(40, 167, 69, 0.8)",
+              "rgba(0, 180, 216, 0.8)",
+              "rgba(255, 193, 7, 0.8)",
+              "rgba(220, 53, 69, 0.8)",
+              "rgba(108, 117, 125, 0.8)",
+              "rgba(52, 58, 64, 0.8)",
+            ],
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    });
+  }
+
+  // Training Types Distribution Chart
+  const trainingTypesCtx = document.getElementById("trainingTypesChart");
+  if (trainingTypesCtx && typeof Chart !== "undefined") {
+    new Chart(trainingTypesCtx, {
+      type: "bar",
+      data: {
+        labels: ["Disaster Response", "Risk Assessment", "Community Training", "Emergency Mgmt", "Medical Response", "Others"],
+        datasets: [
+          {
+            label: "Number of Trainings",
+            data: [35, 28, 42, 18, 22, 11],
+            backgroundColor: "rgba(40, 167, 69, 0.8)",
+            borderColor: "rgba(40, 167, 69, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+      },
+    });
+  }
+
+  // Enrollment Trends Chart
+  const enrollmentTrendsCtx = document.getElementById("enrollmentTrendsChart");
+  if (enrollmentTrendsCtx && typeof Chart !== "undefined") {
+    new Chart(enrollmentTrendsCtx, {
+      type: "line",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        datasets: [
+          {
+            label: "Monthly Enrollments",
+            data: [245, 312, 289, 378, 445, 412],
+            borderColor: "rgba(0, 180, 216, 1)",
+            backgroundColor: "rgba(0, 180, 216, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+
+  console.log("Analytics charts initialized");
 }
 
 // ==================== ADMIN FUNCTIONS ====================
