@@ -213,6 +213,16 @@ function updateUIForLoggedInUser() {
                     <div style="font-weight: 600; font-size: 0.95rem;">Welcome, ${currentUser.name}</div>
                     <div style="font-size: 0.8rem; opacity: 0.85;">${currentUser.role} • ${currentUser.state}</div>
                 </div>
+                <button onclick="openModal('chatModal')" style="
+                    padding: 0.5rem 1rem;
+                    background: rgba(255, 255, 255, 0.2);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                ">🤖 Chat</button>
                 <button onclick="logout()" style="
                     padding: 0.5rem 1rem;
                     background: rgba(255, 255, 255, 0.2);
@@ -246,6 +256,7 @@ function updateUIForLoggedOutUser() {
     authButtons.innerHTML = `
             <button id="signInBtn" class="btn btn-primary">Sign In</button>
             <button id="logInBtn" class="btn btn-outline">Log In</button>
+            <button id="chatbotBtn" class="btn btn-outline" onclick="openModal('chatModal')">🤖 Chat</button>
         `;
 
     document
@@ -260,6 +271,13 @@ function updateUIForLoggedOutUser() {
       ?.addEventListener("click", function (e) {
         e.preventDefault();
         openModal("logInModal");
+      });
+
+    document
+      .getElementById("chatbotBtn")
+      ?.addEventListener("click", function (e) {
+        e.preventDefault();
+        openModal("chatModal");
       });
   }
 
@@ -404,6 +422,14 @@ function initializeEventListeners() {
     });
   }
 
+  // Floating Chatbot
+  const floatingChatbot = document.getElementById("floating-chatbot");
+  if (floatingChatbot) {
+    floatingChatbot.addEventListener("click", function () {
+      openModal("chatModal");
+    });
+  }
+
   // Close buttons
   const closeSignIn = document.getElementById("closeSignIn");
   if (closeSignIn) {
@@ -416,6 +442,14 @@ function initializeEventListeners() {
   if (closeLogIn) {
     closeLogIn.addEventListener("click", function () {
       closeModal("logInModal");
+    });
+  }
+
+  // Chat modal
+  const closeChat = document.getElementById("closeChat");
+  if (closeChat) {
+    closeChat.addEventListener("click", function () {
+      closeModal("chatModal");
     });
   }
 
@@ -467,6 +501,31 @@ function initializeEventListeners() {
   const logInForm = document.getElementById("logInForm");
   if (logInForm) {
     logInForm.addEventListener("submit", handleLogIn);
+  }
+
+  // Chat functionality
+  const chatInput = document.getElementById("chatInput");
+  const sendChatBtn = document.getElementById("sendChatBtn");
+
+  if (chatInput && sendChatBtn) {
+    const sendMessage = function() {
+      const message = chatInput.value.trim();
+      if (message) {
+        addMessage(message, 'user');
+        chatInput.value = '';
+        setTimeout(() => {
+          const response = getBotResponse(message);
+          addMessage(response, 'bot');
+        }, 500);
+      }
+    };
+
+    sendChatBtn.addEventListener("click", sendMessage);
+    chatInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
   }
 
   console.log("Event listeners initialized");
@@ -1010,3 +1069,62 @@ async function downloadReport() {
 }
 
 console.log("SafeStep Platform Script Loaded - Version 2.0");
+
+// ==================== CHATBOT FUNCTIONS ====================
+
+function addMessage(message, sender) {
+  const chatMessages = document.getElementById("chatMessages");
+  if (!chatMessages) return;
+
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message ${sender}-message`;
+
+  const avatarDiv = document.createElement("div");
+  avatarDiv.className = "message-avatar";
+  avatarDiv.textContent = sender === 'bot' ? '🤖' : '👤';
+
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "message-content";
+  contentDiv.innerHTML = `<p>${message}</p>`;
+
+  messageDiv.appendChild(avatarDiv);
+  messageDiv.appendChild(contentDiv);
+  chatMessages.appendChild(messageDiv);
+
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function getBotResponse(message) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+    return "Hello! Welcome to SafeStep. How can I assist you with disaster training and management?";
+  }
+
+  if (lowerMessage.includes('training') || lowerMessage.includes('trainings')) {
+    return "SafeStep offers comprehensive disaster training programs. You can view available trainings in the Training Events section. Would you like help finding specific training types?";
+  }
+
+  if (lowerMessage.includes('dashboard') || lowerMessage.includes('analytics')) {
+    return "The Dashboard shows key metrics and the Analytics section provides detailed reports. You can access these from the navigation menu.";
+  }
+
+  if (lowerMessage.includes('report') || lowerMessage.includes('reports')) {
+    return "Reports are available in the Reports section. You can generate and export various types of reports for your disaster management activities.";
+  }
+
+  if (lowerMessage.includes('login') || lowerMessage.includes('sign in')) {
+    return "To access the full features, please log in using the Sign In button. Demo credentials are available in the login modal.";
+  }
+
+  if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
+    return "I'm here to help! You can ask me about trainings, reports, analytics, or any other features of the SafeStep platform.";
+  }
+
+  if (lowerMessage.includes('disaster') || lowerMessage.includes('emergency')) {
+    return "SafeStep is designed to help manage disaster response and training. Our platform supports various disaster types including floods, earthquakes, and more.";
+  }
+
+  return "I'm still learning! For specific questions about SafeStep features, try asking about trainings, reports, or analytics. How else can I help?";
+}

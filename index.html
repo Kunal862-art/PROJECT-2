@@ -32,6 +32,7 @@
         <div class="auth-buttons">
           <button id="signInBtn" class="btn btn-primary">Sign In</button>
           <button id="logInBtn" class="btn btn-outline">Log In</button>
+          <button id="chatbotBtn" class="btn btn-outline">🤖 Chat</button>
         </div>
       </div>
     </header>
@@ -2041,6 +2042,37 @@
           <p>Password: admin123</p>
         </div>
       </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal">
+      <div class="modal-content chat-modal-content">
+        <div class="modal-header">
+          <h2>🤖 SafeStep Assistant</h2>
+          <button type="button" class="modal-close" id="closeChat">
+            &times;
+          </button>
+        </div>
+        <div class="chat-container">
+          <div id="chatMessages" class="chat-messages">
+            <div class="message bot-message">
+              <div class="message-avatar">🤖</div>
+              <div class="message-content">
+                <p>Hello! I'm your SafeStep assistant. How can I help you with disaster training and management today?</p>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." />
+            <button id="sendChatBtn" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Chatbot -->
+    <div id="floating-chatbot" class="floating-chatbot">
+      🤖
     </div>
 
     <!-- Scripts -->
