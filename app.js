@@ -1010,3 +1010,5 @@ async function downloadReport() {
 }
 
 console.log("SafeStep Platform Script Loaded - Version 2.0");
+
+
