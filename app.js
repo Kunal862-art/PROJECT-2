@@ -48,8 +48,14 @@ async function apiCall(endpoint, method = "GET", data = null) {
     }
 
     if (!response.ok && response.status === 401) {
-      currentUser = null;
-      updateUIForLoggedOutUser();
+      // Only auto-logout for auth endpoints, not for data endpoints
+      if (!endpoint.includes('/auth/')) {
+        console.warn("API returned 401 for non-auth endpoint:", endpoint);
+        // Don't auto-logout for data endpoints
+      } else {
+        currentUser = null;
+        updateUIForLoggedOutUser();
+      }
     }
 
     return { status: response.status, ...result };
@@ -67,9 +73,25 @@ async function apiCall(endpoint, method = "GET", data = null) {
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("SafeStep Platform Frontend Started");
-  initializeEventListeners();
+
+  // Initialize navigation first
   initializeNavigation();
+  initializeEventListeners();
   initializeSettingsTabs();
+
+  // Show navigation bar immediately
+  const navMenu = document.querySelector(".nav-menu");
+  if (navMenu) {
+    navMenu.style.display = "flex";
+    const navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.style.display = "block";
+    });
+  }
+
+  // Initialize UI for logged-out state
+  updateUIForLoggedOutUser();
+
   setTimeout(() => {
     initializeChart();
     initializeAnalyticsCharts();
@@ -91,7 +113,7 @@ async function checkAuthStatus() {
     updateUIForLoggedInUser();
     loadUserData();
   } else {
-    console.log("No active session");
+    console.log("No active session or API error:", result.message);
     updateUIForLoggedOutUser();
   }
 }
@@ -174,9 +196,15 @@ async function handleLogIn(e) {
   if (result.success) {
     currentUser = result.user;
     console.log("Login successful:", currentUser);
-    alert("Welcome back, " + currentUser.name + "!");
+    console.log("User data:", {
+      name: currentUser?.name,
+      role: currentUser?.role,
+      state: currentUser?.state
+    });
+    alert("Welcome back, " + (currentUser?.name || "User") + "!");
     closeModal("logInModal");
     document.getElementById("logInForm").reset();
+    console.log("Calling updateUIForLoggedInUser...");
     updateUIForLoggedInUser();
     loadUserData();
   } else {
@@ -194,7 +222,8 @@ async function logout() {
     console.log("Logout successful");
     alert("You have been logged out");
     updateUIForLoggedOutUser();
-    setTimeout(() => location.reload(), 500);
+    // Remove the page reload for better UX in single-page app
+    // setTimeout(() => location.reload(), 500);
   } else {
     alert("Logout failed: " + result.message);
   }
@@ -204,52 +233,105 @@ async function logout() {
 
 function updateUIForLoggedInUser() {
   console.log("Updating UI for logged-in user");
+  console.log("Current user:", currentUser);
 
-  const authButtons = document.querySelector(".auth-buttons");
-  if (authButtons) {
-    authButtons.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 1.5rem; color: white; padding: 0 1rem;">
-                <div>
-                    <div style="font-weight: 600; font-size: 0.95rem;">Welcome, ${currentUser.name}</div>
-                    <div style="font-size: 0.8rem; opacity: 0.85;">${currentUser.role} • ${currentUser.state}</div>
-                </div>
-                <button onclick="openModal('chatModal')" style="
-                    padding: 0.5rem 1rem;
-                    background: rgba(255, 255, 255, 0.2);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    color: white;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.3s ease;
-                ">🤖 Chat</button>
-                <button onclick="logout()" style="
-                    padding: 0.5rem 1rem;
-                    background: rgba(255, 255, 255, 0.2);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    color: white;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.3s ease;
-                ">Logout</button>
-            </div>
-        `;
+  // Check if currentUser exists
+  if (!currentUser) {
+    console.error("currentUser is not set, cannot update UI");
+    updateUIForLoggedOutUser();
+    return;
   }
 
+  console.log("Updating navigation menu...");
+  // Show navigation menu for logged-in users
+  const navMenu = document.querySelector(".nav-menu");
+  if (navMenu) {
+    navMenu.style.display = "flex";
+
+    // All navigation links are visible for logged-in users
+    const navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.style.display = "block";
+    });
+    console.log("Navigation menu updated");
+  } else {
+    console.error("Navigation menu not found");
+  }
+
+  console.log("Updating auth buttons...");
+  const authButtons = document.querySelector(".auth-buttons");
+  if (authButtons) {
+    const userName = currentUser.name || "User";
+    const userRole = currentUser.role || "User";
+    const userState = currentUser.state || "";
+
+    // Create welcome message element
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.style.cssText = 'color: white; margin-right: 1rem; font-size: 0.9rem;';
+    welcomeDiv.innerHTML = `
+      <div style="font-weight: 600;">Welcome, ${userName}</div>
+      <div style="opacity: 0.85; font-size: 0.8rem;">${userRole} • ${userState}</div>
+    `;
+
+    // Create chat button
+    const chatBtn = document.createElement('button');
+    chatBtn.className = 'btn btn-outline';
+    chatBtn.style.cssText = 'padding: 0.5rem 1rem;';
+    chatBtn.textContent = '🤖';
+    chatBtn.onclick = () => openModal('chatModal');
+
+    // Create logout button
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'btn btn-outline';
+    logoutBtn.style.cssText = 'padding: 0.5rem 1rem;';
+    logoutBtn.textContent = 'Logout';
+    logoutBtn.onclick = logout;
+
+    // Clear and add new elements
+    authButtons.innerHTML = '';
+    authButtons.appendChild(welcomeDiv);
+    authButtons.appendChild(chatBtn);
+    authButtons.appendChild(logoutBtn);
+
+    console.log("Auth buttons updated with DOM manipulation");
+  } else {
+    console.error("Auth buttons not found");
+  }
+
+  console.log("Updating main content...");
   const mainContent = document.querySelector(".main-content");
   if (mainContent) {
     mainContent.style.display = "flex";
+    console.log("Main content shown");
+  } else {
+    console.error("Main content not found");
   }
 
+  console.log("Showing dashboard section...");
   showSection("dashboard");
   loadDashboardStats();
   showAdminPanels();
   loadReports();
+
+  // Update profile section with current user data
+  updateProfileSection();
+  console.log("UI update complete");
 }
 
 function updateUIForLoggedOutUser() {
   console.log("Updating UI for logged-out user");
+
+  // Keep navigation menu visible with all tabs for logged-out users
+  const navMenu = document.querySelector(".nav-menu");
+  if (navMenu) {
+    navMenu.style.display = "flex";
+
+    // Show all navigation links for logged-out users
+    const navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.style.display = "block";
+    });
+  }
 
   const authButtons = document.querySelector(".auth-buttons");
   if (authButtons) {
@@ -286,10 +368,134 @@ function updateUIForLoggedOutUser() {
     mainContent.style.display = "flex";
   }
 
+  // Update profile section for logged-out state
+  updateProfileSection();
+
   showSection("dashboard");
 }
 
-// ==================== DATA LOADING FUNCTIONS ====================
+// ==================== PROFILE FUNCTIONS ====================
+
+function updateProfileSection() {
+  const profileContainer = document.querySelector('.profile-container');
+
+  if (!currentUser) {
+    // Show login prompt for logged-out users
+    if (profileContainer) {
+      profileContainer.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <h3>Please Log In</h3>
+          <p>You need to be logged in to view your profile information.</p>
+          <button class="btn btn-primary" onclick="openModal('logInModal')">Log In</button>
+          <button class="btn btn-outline" onclick="openModal('signInModal')" style="margin-left: 1rem;">Sign Up</button>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // Show actual profile for logged-in users
+  if (profileContainer) {
+    profileContainer.innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <div class="avatar-circle">
+            <span class="avatar-text">${getUserInitials(currentUser.name)}</span>
+          </div>
+        </div>
+        <div class="profile-info">
+          <h3>${currentUser.name}</h3>
+          <p class="profile-role">${currentUser.role}</p>
+          <p class="profile-location">${currentUser.state}</p>
+          <div class="profile-stats">
+            <span class="stat-item">${appData.userEnrollments ? appData.userEnrollments.length : 0} Enrollments</span>
+            <span class="stat-item">Member since 2024</span>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-primary">Edit Profile</button>
+          <button class="btn btn-outline">Change Password</button>
+        </div>
+      </div>
+
+      <div class="profile-content">
+        <div class="profile-section">
+          <h4>Personal Information</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Full Name</label>
+              <p>${currentUser.name}</p>
+            </div>
+            <div class="info-item">
+              <label>Email Address</label>
+              <p>${currentUser.email}</p>
+            </div>
+            <div class="info-item">
+              <label>Phone Number</label>
+              <p>+91 98765 43210</p>
+            </div>
+            <div class="info-item">
+              <label>Date of Birth</label>
+              <p>15 March 1985</p>
+            </div>
+            <div class="info-item">
+              <label>Gender</label>
+              <p>Male</p>
+            </div>
+            <div class="info-item">
+              <label>Employee ID</label>
+              <p>DMO-2024-001</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h4>${currentUser.role} Information</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Department</label>
+              <p>Disaster Management</p>
+            </div>
+            <div class="info-item">
+              <label>Role</label>
+              <p>${currentUser.role}</p>
+            </div>
+            <div class="info-item">
+              <label>Location</label>
+              <p>${currentUser.state}</p>
+            </div>
+            <div class="info-item">
+              <label>Joining Date</label>
+              <p>January 2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  console.log("Profile section updated for user:", currentUser?.name || "logged out user");
+}
+
+function getUserInitials(name) {
+  if (!name) return "U";
+  const nameParts = name.split(' ');
+  if (nameParts.length >= 2) {
+    return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+  }
+  return name.charAt(0).toUpperCase();
+}
+
+// Modify showSection to update profile when profile section is shown
+const originalShowSection = window.showSection;
+window.showSection = function(sectionId) {
+  originalShowSection(sectionId);
+
+  // If showing profile section and user is logged in, update it
+  if (sectionId === 'profile' && currentUser) {
+    updateProfileSection();
+  }
+};
 
 async function loadUserData() {
   if (!currentUser) {
@@ -299,28 +505,19 @@ async function loadUserData() {
 
   console.log("Loading user data...");
 
-  const profileResult = await apiCall("/user/profile", "GET");
-  if (profileResult.success) {
-    currentUser = { ...currentUser, ...profileResult.user };
-    console.log("Profile loaded");
-  } else {
-    console.error("Failed to load profile:", profileResult.message);
-  }
-
-  const enrollmentsResult = await apiCall("/user/enrollments", "GET");
-  if (enrollmentsResult.success) {
-    appData.userEnrollments = enrollmentsResult.enrollments;
-    console.log("Enrollments loaded:", enrollmentsResult.enrollments.length);
-  } else {
-    console.error("Failed to load enrollments:", enrollmentsResult.message);
-  }
-
-  const sessionsResult = await apiCall("/user/sessions", "GET");
-  if (sessionsResult.success) {
-    appData.currentUserSessions = sessionsResult.sessions;
-    console.log("Sessions loaded:", sessionsResult.sessions.length);
-  } else {
-    console.error("Failed to load sessions:", sessionsResult.message);
+  try {
+    // Load user enrollments
+    const enrollmentsResult = await apiCall("/api/user/enrollments", "GET");
+    if (enrollmentsResult.success) {
+      appData.userEnrollments = enrollmentsResult.enrollments;
+      console.log("Enrollments loaded:", enrollmentsResult.enrollments.length);
+    } else {
+      console.error("Failed to load enrollments:", enrollmentsResult.message);
+      // Don't trigger logout on enrollment load failure
+    }
+  } catch (error) {
+    console.error("Error loading user data:", error);
+    // Don't trigger logout on data load failure
   }
 }
 
