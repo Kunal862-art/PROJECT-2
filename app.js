@@ -17,6 +17,9 @@ const appData = {
 
 // Current user state
 let currentUser = null;
+let authCheckResult = null;
+let isInitialLoad = true;
+let lastLoginTime = 0;
 
 // ==================== API HELPER FUNCTIONS ====================
 
@@ -49,7 +52,11 @@ async function apiCall(endpoint, method = "GET", data = null) {
 
     if (!response.ok && response.status === 401) {
       currentUser = null;
-      updateUIForLoggedOutUser();
+      // Don't auto-logout if login happened recently (prevent flickering)
+      const timeSinceLogin = Date.now() - lastLoginTime;
+      if (!isInitialLoad && timeSinceLogin > 5000) {
+        updateUIForLoggedOutUser();
+      }
     }
 
     return { status: response.status, ...result };
@@ -70,29 +77,62 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeEventListeners();
   initializeNavigation();
   initializeSettingsTabs();
-  setTimeout(() => {
+  initializeChatbot();
+  setTimeout(async () => {
     initializeChart();
     initializeAnalyticsCharts();
     initializeMap();
-    checkAuthStatus();
-    loadTrainings();
+
+    // Only check auth status if user is not already logged in
+    if (!currentUser) {
+      await checkAuthStatus();
+      await loadTrainings();
+      finalizeAuthState();
+    } else {
+      // User is already logged in, just load user data
+      loadUserData();
+      // Don't call loadTrainings() here to avoid potential 401 logout
+    }
   }, 100);
 });
 
-// ==================== AUTHENTICATION FUNCTIONS ====================
+async function finalizeAuthState() {
+  console.log("Finalizing authentication state...");
+
+  // If user is already logged in (from login process), don't override
+  if (currentUser) {
+    console.log("User already authenticated, skipping finalizeAuthState");
+    return;
+  }
+
+  // If auth check succeeded and we still have a currentUser (no 401 errors occurred)
+  if (authCheckResult && authCheckResult.success && authCheckResult.logged_in && authCheckResult.user && currentUser) {
+    console.log("Authentication confirmed, updating UI for logged-in user");
+    updateUIForLoggedInUser();
+    loadUserData();
+  } else {
+    console.log("Authentication failed or session invalid, updating UI for logged-out user");
+    currentUser = null;
+    updateUIForLoggedOutUser();
+  }
+
+  // Initial load is complete
+  isInitialLoad = false;
+}
 
 async function checkAuthStatus() {
   console.log("Checking authentication status...");
   const result = await apiCall("/auth/check", "GET");
+  authCheckResult = result;
 
   if (result.success && result.logged_in && result.user) {
-    console.log("User already logged in:", result.user);
+    console.log("User authentication check passed:", result.user);
     currentUser = result.user;
-    updateUIForLoggedInUser();
-    loadUserData();
+    // Don't update UI yet - wait for other API calls to complete
   } else {
     console.log("No active session");
-    updateUIForLoggedOutUser();
+    currentUser = null;
+    // Don't update UI yet - wait for other API calls to complete
   }
 }
 
@@ -142,12 +182,15 @@ async function handleSignIn(e) {
 
   if (result.success) {
     currentUser = result.user;
+    lastLoginTime = Date.now();
     console.log("Registration successful:", currentUser);
     alert("Account created successfully! Welcome " + name);
     closeModal("signInModal");
     document.getElementById("signInForm").reset();
     updateUIForLoggedInUser();
     loadUserData();
+    // Mark initial load as complete to prevent auth flickering
+    isInitialLoad = false;
   } else {
     console.error("Registration failed:", result.message);
     alert("Registration failed: " + result.message);
@@ -173,12 +216,15 @@ async function handleLogIn(e) {
 
   if (result.success) {
     currentUser = result.user;
+    lastLoginTime = Date.now();
     console.log("Login successful:", currentUser);
     alert("Welcome back, " + currentUser.name + "!");
     closeModal("logInModal");
     document.getElementById("logInForm").reset();
     updateUIForLoggedInUser();
     loadUserData();
+    // Mark initial load as complete to prevent auth flickering
+    isInitialLoad = false;
   } else {
     console.error("Login failed:", result.message);
     alert("Login failed: " + result.message);
@@ -1010,5 +1056,201 @@ async function downloadReport() {
 }
 
 console.log("SafeStep Platform Script Loaded - Version 2.0");
+
+// ==================== CHATBOT FUNCTIONALITY ====================
+
+// Chatbot responses database
+const chatbotResponses = {
+  greetings: [
+    "Hello! How can I help you with SafeStep today?",
+    "Hi there! I'm here to assist you with disaster training management.",
+    "Welcome to SafeStep! What can I help you with?"
+  ],
+  help: [
+    "I can help you with:\n• Training information\n• Platform navigation\n• Account questions\n• General support\n\nWhat would you like to know?",
+    "Here are some things I can assist with:\n📚 Training programs\n👤 Account management\n📊 Analytics & reports\n🆘 Emergency procedures\n\nHow can I help?"
+  ],
+  training: [
+    "SafeStep offers comprehensive disaster training programs including:\n• Earthquake preparedness\n• Flood response\n• Fire safety\n• Emergency evacuation\n• First aid training\n\nWould you like to view available trainings?",
+    "Our training programs cover various disaster scenarios. You can view all available trainings in the Training Events section of the dashboard."
+  ],
+  account: [
+    "For account-related questions:\n• Sign up for a new account using the Sign In button\n• Log in with your existing credentials\n• Contact your administrator for role assignments\n\nNeed help with something specific?",
+    "Account management: You can sign up, log in, or manage your profile through the authentication buttons in the top navigation."
+  ],
+  analytics: [
+    "The Analytics section provides:\n📈 Training completion rates\n👥 Participant statistics\n📊 Performance metrics\n📋 Detailed reports\n\nAccess it from the main navigation menu.",
+    "Analytics help you track training effectiveness and participant progress. Check the Analytics tab for comprehensive insights."
+  ],
+  reports: [
+    "Reports section includes:\n📄 Training summaries\n📈 Performance reports\n👤 User activity logs\n📊 Custom analytics\n\nAvailable in the Reports menu.",
+    "Generate detailed reports on training activities, user participation, and system performance from the Reports section."
+  ],
+  default: [
+    "I'm not sure about that. Try asking about:\n• Training programs\n• Account help\n• Analytics\n• Reports\n• Platform features",
+    "I can help with SafeStep platform questions. For specific technical issues, please contact support.",
+    "Let me help you with that. Could you rephrase your question or ask about trainings, accounts, or analytics?"
+  ]
+};
+
+// Chatbot state
+let chatbotVisible = false;
+
+// Initialize chatbot
+function initializeChatbot() {
+  console.log("Initializing chatbot...");
+
+  const floatingChatbotBtn = document.getElementById("floating-chatbot-btn");
+  const chatbotWindow = document.getElementById("chatbot-window");
+  const chatbotClose = document.getElementById("chatbot-close");
+  const chatbotInput = document.getElementById("chatbot-input");
+  const chatbotSend = document.getElementById("chatbot-send");
+  const chatbotMessages = document.getElementById("chatbot-messages");
+
+  // Floating chatbot button - show/hide window
+  floatingChatbotBtn.addEventListener("click", function() {
+    if (chatbotVisible) {
+      hideChatbot();
+    } else {
+      showChatbot();
+    }
+  });
+
+  // Close button
+  chatbotClose.addEventListener("click", function() {
+    hideChatbot();
+  });
+
+  // Navigation chatbot button
+  const navChatbotBtn = document.getElementById("nav-chatbot-btn");
+  if (navChatbotBtn) {
+    navChatbotBtn.addEventListener("click", function() {
+      showChatbot();
+      // Focus on input after showing
+      setTimeout(() => {
+        chatbotInput.focus();
+      }, 100);
+    });
+  }
+
+  // Send message on button click
+  chatbotSend.addEventListener("click", function() {
+    sendMessage();
+  });
+
+  // Send message on Enter key
+  chatbotInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+
+  // Close chatbot when clicking outside
+  document.addEventListener("click", function(e) {
+    if (chatbotVisible &&
+        !chatbotWindow.contains(e.target) &&
+        !floatingChatbotBtn.contains(e.target) &&
+        !navChatbotBtn.contains(e.target)) {
+      hideChatbot();
+    }
+  });
+
+  // Auto-scroll to bottom when new messages are added
+  function scrollToBottom() {
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  }
+
+  // Show chatbot window
+  function showChatbot() {
+    chatbotWindow.style.display = "flex";
+    chatbotVisible = true;
+    // Focus on input
+    setTimeout(() => {
+      chatbotInput.focus();
+    }, 100);
+  }
+
+  // Hide chatbot window
+  function hideChatbot() {
+    chatbotWindow.style.display = "none";
+    chatbotVisible = false;
+  }
+
+  // Send user message and get bot response
+  function sendMessage() {
+    const message = chatbotInput.value.trim();
+    if (!message) return;
+
+    // Add user message
+    addMessage(message, "user");
+    chatbotInput.value = "";
+
+    // Get bot response after a short delay
+    setTimeout(() => {
+      const response = getBotResponse(message);
+      addMessage(response, "bot");
+    }, 500);
+  }
+
+  // Add message to chat
+  function addMessage(content, type) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${type}-message`;
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "message-content";
+    contentDiv.innerHTML = content.replace(/\n/g, "<br>");
+
+    messageDiv.appendChild(contentDiv);
+    chatbotMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  // Get appropriate bot response
+  function getBotResponse(message) {
+    const lowerMessage = message.toLowerCase();
+
+    // Check for keywords and return appropriate responses
+    if (lowerMessage.includes("hello") || lowerMessage.includes("hi") || lowerMessage.includes("hey")) {
+      return getRandomResponse(chatbotResponses.greetings);
+    }
+
+    if (lowerMessage.includes("help") || lowerMessage.includes("what can you do")) {
+      return getRandomResponse(chatbotResponses.help);
+    }
+
+    if (lowerMessage.includes("training") || lowerMessage.includes("course") || lowerMessage.includes("learn")) {
+      return getRandomResponse(chatbotResponses.training);
+    }
+
+    if (lowerMessage.includes("account") || lowerMessage.includes("login") || lowerMessage.includes("sign") || lowerMessage.includes("password")) {
+      return getRandomResponse(chatbotResponses.account);
+    }
+
+    if (lowerMessage.includes("analytics") || lowerMessage.includes("statistics") || lowerMessage.includes("data")) {
+      return getRandomResponse(chatbotResponses.analytics);
+    }
+
+    if (lowerMessage.includes("report") || lowerMessage.includes("summary")) {
+      return getRandomResponse(chatbotResponses.reports);
+    }
+
+    if (lowerMessage.includes("thank") || lowerMessage.includes("thanks")) {
+      return "You're welcome! Is there anything else I can help you with?";
+    }
+
+    if (lowerMessage.includes("bye") || lowerMessage.includes("goodbye")) {
+      return "Goodbye! Feel free to chat again if you need assistance.";
+    }
+
+    // Default response
+    return getRandomResponse(chatbotResponses.default);
+  }
+
+  // Get random response from array
+  function getRandomResponse(responses) {
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
+}
 
 

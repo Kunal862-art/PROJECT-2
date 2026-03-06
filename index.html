@@ -29,6 +29,11 @@
           <a href="#analytics" class="nav-link">Analytics</a>
           <a href="#reports" class="nav-link">Reports</a>
         </nav>
+        <div class="nav-actions">
+          <button id="nav-chatbot-btn" class="nav-chatbot-btn" title="Chat Assistant">
+            <span class="chatbot-icon">🤖</span>
+          </button>
+        </div>
         <div class="auth-buttons">
           <button id="signInBtn" class="btn btn-primary">Sign In</button>
           <button id="logInBtn" class="btn btn-outline">Log In</button>
@@ -2043,9 +2048,38 @@
       </div>
     </div>
 
+    <!-- Floating Chatbot Icon -->
+    <button id="floating-chatbot-btn" class="floating-chatbot-btn" title="Chat with SafeStep Assistant">
+      <span class="chatbot-icon">🤖</span>
+    </button>
+
+    <!-- Chatbot Window (Hidden by default) -->
+    <div id="chatbot-window" class="chatbot-window" style="display: none;">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <span class="chatbot-icon">🤖</span>
+          SafeStep Assistant
+        </div>
+        <button id="chatbot-close" class="chatbot-close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="chatbot-body">
+        <div id="chatbot-messages" class="chatbot-messages">
+          <div class="message bot-message">
+            <div class="message-content">
+              Hello! I'm your SafeStep assistant. How can I help you today?
+            </div>
+          </div>
+        </div>
+        <div class="chatbot-input-area">
+          <input type="text" id="chatbot-input" placeholder="Type your message..." class="chatbot-input">
+          <button id="chatbot-send" class="chatbot-send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script src="app.js"></script>
   </body>
 </html>
-
-
